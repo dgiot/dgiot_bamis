@@ -14,12 +14,22 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
--define(MATLAB, <<"MATLAB">>).
--record(state, {
-    id,
-    env = #{},
-    dtuaddr = <<>>,
-    step = login,
-    ref = undefined,
-    search = <<"quick">>
-}).
+%% @doc dgiot_bamis Application
+-module(dgiot_bamis_app).
+-emqx_plugin(?MODULE).
+-behaviour(application).
+
+%% Application callbacks
+-export([start/2, stop/1]).
+
+
+%%--------------------------------------------------------------------
+%% Application callbacks
+%%--------------------------------------------------------------------
+
+start(_StartType, _StartArgs) ->
+    {ok, Sup} = dgiot_bamis_sup:start_link(),
+    {ok, Sup}.
+
+stop(_State) ->
+    ok.

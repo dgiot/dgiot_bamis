@@ -13,9 +13,10 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 %%--------------------------------------------------------------------
--module(dgiot_amis_handler).
+-module(dgiot_bamis_handler).
 -author("johnliu").
 -behavior(dgiot_rest).
+-dgiot_rest(all).
 -include_lib("dgiot/include/logger.hrl").
 
 %% API
@@ -72,6 +73,18 @@ handle(OperationID, Args, Context, Req) ->
 %%%===================================================================
 %%% 内部函数 Version:API版本
 %%%===================================================================
+
+%% iot_hub 概要: 查询平台api资源 描述:总控台
+%% OperationId:get_amis
+%% 请求:POST /iotapi/get_amis
+do_request(get_amis, #{<<"deviceid">> := Deviceid}, _Context, _Req) ->
+    case dgiot_parse:get_object(<<"Device">>, Deviceid) of
+        {ok, #{<<"profile">> := Profile}} ->
+            {ok, Profile};
+        _ ->
+            {ok, #{}}
+    end;
+
 
 %%  服务器不支持的API接口
 do_request(_OperationId, _Args, _Context, _Req) ->

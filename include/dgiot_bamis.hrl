@@ -14,22 +14,12 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
-%% @doc dgiot_amis Application
--module(dgiot_amis_app).
--emqx_plugin(?MODULE).
--behaviour(application).
-
-%% Application callbacks
--export([start/2, stop/1]).
-
-
-%%--------------------------------------------------------------------
-%% Application callbacks
-%%--------------------------------------------------------------------
-
-start(_StartType, _StartArgs) ->
-    {ok, Sup} = dgiot_amis_sup:start_link(),
-    {ok, Sup}.
-
-stop(_State) ->
-    ok.
+-define(AMIS, <<"AMIS">>).
+-record(state, {
+    id,
+    env = #{},
+    dtuaddr = <<>>,
+    step = login,
+    ref = undefined,
+    search = <<"quick">>
+}).

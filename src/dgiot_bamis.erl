@@ -14,9 +14,9 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
-%% @doc dgiot_amis Protocol
--module(dgiot_amis).
--include("dgiot_amis.hrl").
+%% @doc dgiot_bamis Protocol
+-module(dgiot_bamis).
+-include("dgiot_bamis.hrl").
 -include_lib("dgiot/include/logger.hrl").
 -export([
     create_amis/3
@@ -29,13 +29,13 @@ create_amis(DtuAddr, ChannelId, DTUIP) ->
     {ProductId, Acl, _Properties} = dgiot_data:get({amis, ChannelId}),
     Requests = #{
         <<"devaddr">> => DtuAddr,
-        <<"name">> => <<"MATLAB_", DtuAddr/binary>>,
+        <<"name">> => <<"AMIS_", DtuAddr/binary>>,
         <<"ip">> => DTUIP,
         <<"isEnable">> => true,
         <<"product">> => ProductId,
         <<"ACL">> => Acl,
         <<"status">> => <<"ONLINE">>,
-        <<"brand">> => <<"MATLAB", DtuAddr/binary>>,
-        <<"devModel">> => <<"MATLAB">>
+        <<"brand">> => <<"AMIS", DtuAddr/binary>>,
+        <<"devModel">> => <<"AMIS">>
     },
     dgiot_device:create_device(Requests).
