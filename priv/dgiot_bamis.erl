@@ -18,18 +18,19 @@
 -module(dgiot_bamis).
 -include("dgiot_bamis.hrl").
 -include_lib("dgiot/include/logger.hrl").
+-include_lib("dgiot/include/dgiot_mnesia.hrl").
 -export([
     create_amis/3,
-    put_amis_device/2,
+    put_amis_device/3,
     del_amis_device/1,
     created_amis_device/3
 ]).
 
 -define(APP, ?MODULE).
 del_amis_device(DeviceId) ->
-    dgiot_device:delete(DeviceId).
+    dgiot_mnesia:delete(DeviceId).
 %%修改设备
-put_amis_device( #{<<"objectId">> := Deviceid} = Body, SessionToken) ->
+put_amis_device(put_amis_device, #{<<"objectId">> := Deviceid} = Body, SessionToken) ->
     case dgiot_parse:get_object(<<"Device">>, Deviceid,
         [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of
         {ok, #{<<"data">> := OldRole}} ->

@@ -9,99 +9,6 @@
     }
   ],
   "paths": {
-    "/dashboard": {
-      "post": {
-        "description": "启动任务推送大屏数据",
-        "parameters": [
-          {
-            "name": "dashboardId",
-            "description": "大屏ID",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "default": "32511dbfe5"
-          },
-          {
-            "in": "body",
-            "name": "data",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns instance data"
-          },
-          "404": {
-            "description": "object not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        },
-        "summary": "大屏数据",
-        "tags": [
-          "AMIS"
-        ]
-      },
-    },
-    "/big_screen": {
-      "get": {
-        "description": "返回大屏需要的数据",
-        "parameters": [
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns operation status"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Server Internal error"
-          }
-        },
-        "summary": "返回大屏需要的数据",
-        "tags": [
-          "AMIS"
-        ]
-      },
-      "post": {
-        "description": "获取大屏数据（mqtt）",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "data",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns instance data"
-          },
-          "404": {
-            "description": "object not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        },
-        "summary": "获取大屏数据（mqtt）",
-        "tags": [
-          "AMIS"
-        ]
-      }
-    },
     "/amis": {
       "get": {
         "description": "amis测试",
@@ -213,7 +120,7 @@
           "AMIS"
         ]
       },
-      "delete": {
+      "del": {
         "description": "删除amis设备",
         "parameters": [
           {
@@ -243,7 +150,7 @@
           "AMIS"
         ]
       },
-      "post": {
+      "created": {
         "description": "创建amis设备",
         "parameters": [
           {
@@ -287,40 +194,6 @@
           }
         },
         "summary": "创建amis设备",
-        "tags": [
-          "AMIS"
-        ]
-      }
-    },
-    "/update_product": {
-      "post": {
-        "security": [],
-        "description": "更新设备数据",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "data",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns operation status"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Server Internal error"
-          }
-        },
-        "summary": "更新设备数据",
         "tags": [
           "AMIS"
         ]
