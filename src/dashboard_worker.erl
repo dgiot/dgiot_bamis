@@ -30,7 +30,6 @@
 %%%===================================================================
 
 start_link(#{<<"sessionToken">> := SessionToken} = State) ->
-
     case dgiot_data:lookup({dashboard, SessionToken}) of
         {ok, Pid} when is_pid(Pid) ->
             case is_process_alive(Pid) of
@@ -42,7 +41,6 @@ start_link(#{<<"sessionToken">> := SessionToken} = State) ->
         _Reason ->
             gen_server:start_link(?MODULE, [State], [])
     end;
-
 
 start_link(State) ->
     ?LOG(info, "State ~p", [State]),
@@ -63,22 +61,23 @@ init([#{<<"data">> := Que, <<"dashboardId">> := DashboardId, <<"sessionToken">> 
     dgiot_data:insert({dashboard, SessionToken}, self()),
     case length(Que) of
         0 ->
-            erlang:send_after(300, self(), stop);
+            erlang:send_after(3000, self(), stop);
         _ ->
 %%            Topic = <<"dashboard/", SessionToken/binary, "/heart">>,
 %%            dgiot_mqtt:subscribe(Topic),
 %%            erlang:send_after(30 * 1000, self(), heart),
-            erlang:send_after(100, self(), retry)
+            erlang:send_after(1000, self(), retry)
     end,
     {ok, #task{oldque = Que, newque = Que, freq = 1, dashboardId = DashboardId, sessiontoken = SessionToken}};
 
 init([#{<<"data">> := Que, <<"sessionToken">> := SessionToken}]) ->
+    io:format("dashboard_worker_init ~p ~n",[Que]),
     dgiot_data:insert({dashboard, SessionToken}, self()),
     case length(Que) of
         0 ->
-            erlang:send_after(300, self(), stop);
+            erlang:send_after(3000, self(), stop);
         _ ->
-            erlang:send_after(100, self(), retry)
+            erlang:send_after(1000, self(), retry)
     end,
     {ok, #task{oldque = Que, newque = Que, freq = 1, sessiontoken = SessionToken}};
 
@@ -105,7 +104,7 @@ handle_info(retry, #task{newque = Que} = State) when length(Que) == 0 ->
     {stop, normal, State};
 
 handle_info(retry, State) ->
-    {noreply, send_msg(State)};
+    {reply, send_msg(State)};
 
 handle_info(heart, #task{heart = Heart} = State) when Heart < 4 ->
     erlang:send_after(30 * 1000, self(), heart),

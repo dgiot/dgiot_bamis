@@ -97,8 +97,8 @@ do_request(post_dashboard, Arg, Context, _Req) ->
     dgiot_dashboard:post_dashboard(Arg, Context),
     {200, <<"success">>};
 
-do_request(post_big_screen, Arg, Context, _Req) ->
-    dgiot_dashboard:post_dashboard(Arg, Context),
+do_request(post_big_screen, Args, Context, _Req) ->
+    dgiot_dashboard:post_dashboard(Args, Context),
     {200, <<"success">>};
 
 %% iot_hub 概要: 查询平台api资源 描述:总控台

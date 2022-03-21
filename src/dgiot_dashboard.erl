@@ -20,7 +20,9 @@
 
 
 post_dashboard(Args, #{<<"sessionToken">> := SessionToken} = _Context) ->
-    supervisor:start_child(dashboard_task, Args#{<<"sessionToken">> => SessionToken}),
+%%    Args#{<<"sessionToken">> => SessionToken},
+    NewArgs = Args#{<<"sessionToken">> => SessionToken},
+    supervisor:start_child(dashboard_task, [NewArgs]),
     timer:sleep(1000).
 
 %%
@@ -103,14 +105,12 @@ do_task(#{<<"dataType">> := <<"card">>, <<"vuekey">> := Vuekey, <<"table">> := T
             pass
     end;
 
-
 do_task(#{<<"dataType">> := <<"list">>}, #task{sessiontoken = SessionToken}) ->
     case dashboard(SessionToken) of
-        {ok,Info}->
+        {ok, Info} ->
             Base64 = base64:encode(jsx:encode(#{<<"dataType">> => <<"list">>, <<"value">> => Info})),
             Topic = <<"dg/dashboard/getDashboard">>,
-            io:format("~p ~n",[Base64]),
-            dgiot_mqtt:publish(self(),Topic,Base64);
+            dgiot_mqtt:publish(self(), Topic, Base64);
         _ ->
             pass
     end;
@@ -264,7 +264,7 @@ get_device_status_list(SessionToken) ->
     end.
 
 get_error_list(SessionToken) ->
-    case dgiot_parse:query_object(<<"Notification">>, #{<<"keys">> => [<<"count(*)">>], <<"order">> => <<"createdAt">>, <<"where">> => #{<<"status">> => <<"0">>}}, [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of
+    case dgiot_parse:query_object(<<"Notification">>, #{<<"keys">> => [<<"count(*)">>], <<"order">> => <<"-createdAt">>, <<"limit">> => 20, <<"where">> => #{<<"status">> => <<"0">>}}, [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of
         {ok, #{<<"results">> := Results}} ->
             NewList = lists:foldl(fun(X, Acc) ->
                 case X of
@@ -289,22 +289,15 @@ get_error_list(SessionToken) ->
     end.
 
 get_location_list(SessionToken) ->
-    case dgiot_parse:query_object(<<"Device">>, #{<<"keys">> => [<<"count(*)">>]}, [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of
+    case dgiot_parse:query_object(<<"Device">>, #{<<"keys">> => [<<"count(*)">>], <<"order">> => <<"-createdAt">>}, [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of
         {ok, #{<<"results">> := Results}} ->
             NewList = lists:foldl(fun(X, Acc) ->
                 case X of
-                    #{<<"objectId">> := ObjectId, <<"name">> := Name, <<"location">> := #{<<"latitude">> :=Latitude,<<"longitude">> := Longitude}} ->
-                        Acc ++ [#{<<"objectId">> => ObjectId, <<"deviceName">> => Name, <<"location">> => #{<<"lat">> => Latitude,<<"lng">> => Longitude}}];
+                    #{<<"objectId">> := ObjectId, <<"name">> := Name, <<"location">> := #{<<"latitude">> := Latitude, <<"longitude">> := Longitude}} ->
+                        Acc ++ [#{<<"objectId">> => ObjectId, <<"deviceName">> => Name, <<"location">> => #{<<"lat">> => Latitude, <<"lng">> => Longitude}}];
                     _ ->
                         Acc
                 end
                                   end, [], Results),
             {ok, #{<<"records">> => NewList}}
     end.
-
-%%device_count_format(Num) ->
-%%    string:right(integer_to_list(Num), 5, $0).
-%%    erlang:put(<<"Count">>,0),
-%%    lists:foldl(fun(X,Sum)->
-%%        erlang:put(<<"Count">>,erlang:get(<<"Count">>)+1)
-%%        end,0,lists:seq(0,100)).
