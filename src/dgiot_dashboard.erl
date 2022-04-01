@@ -115,6 +115,7 @@ do_task(#{<<"dataType">> := <<"list">>}, #task{sessiontoken = SessionToken}) ->
             pass
     end;
 
+
 do_task(Task, State) ->
     ?LOG(info, "Task ~p", [Task]),
     ?LOG(info, "State ~p", [State]),
@@ -151,50 +152,55 @@ getDevice(ProductId, SessionToken) ->
     end.
 
 dashboard(SessionToken) ->
-    ProductAndDeviceCount = case get_product_and_device_count(SessionToken) of
-                                {ok, Info1} ->
-                                    Info1;
-                                _ ->
-                                    {}
-                            end,
-    DeviceStatus = case get_device_status(SessionToken) of
-                       {ok, Info2} ->
-                           Info2;
-                       _ ->
-                           {}
-                   end,
-    DeviceCountAndProductCount = case get_device_count_and_product_count(SessionToken) of
-                                     {ok, Info3} ->
-                                         Info3;
+    case dgiot_data:lookup(SessionToken) of
+        {ok, Result} ->
+            {ok, Result};
+        _ ->
+            ProductAndDeviceCount = case get_product_and_device_count(SessionToken) of
+                                        {ok, Info1} ->
+                                            Info1;
+                                        _ ->
+                                            {}
+                                    end,
+            DeviceStatus = case get_device_status(SessionToken) of
+                               {ok, Info2} ->
+                                   Info2;
+                               _ ->
+                                   {}
+                           end,
+            DeviceCountAndProductCount = case get_device_count_and_product_count(SessionToken) of
+                                             {ok, Info3} ->
+                                                 Info3;
+                                             _ ->
+                                                 {}
+                                         end,
+            DeviceStatusList = case get_device_status_list(SessionToken) of
+                                   {ok, Info4} ->
+                                       Info4;
+                                   _ ->
+                                       {}
+                               end,
+            ErrorList = case get_error_list(SessionToken) of
+                            {ok, Info5} ->
+                                Info5;
+                            _ ->
+                                {}
+                        end,
+            DeviceLocationList = case get_location_list(SessionToken) of
+                                     {ok, Info6} ->
+                                         Info6;
                                      _ ->
                                          {}
                                  end,
-    DeviceStatusList = case get_device_status_list(SessionToken) of
-                           {ok, Info4} ->
-                               Info4;
-                           _ ->
-                               {}
-                       end,
-    ErrorList = case get_error_list(SessionToken) of
-                    {ok, Info5} ->
-                        Info5;
-                    _ ->
-                        {}
-                end,
-    DeviceLocationList = case get_location_list(SessionToken) of
-                             {ok, Info6} ->
-                                 Info6;
-                             _ ->
-                                 {}
-                         end,
-    {ok, #{<<"deviceStatus">> => DeviceStatus,
-        <<"deviceCountAndProductCount">> => DeviceCountAndProductCount,
-        <<"productDevice">> => ProductAndDeviceCount,
-        <<"deviceStatusRecords">> => DeviceStatusList,
-        <<"errorList">> => ErrorList,
-        <<"deviceLocationRecords">> => DeviceLocationList
-    }}.
-
+            Result = #{<<"deviceStatus">> => DeviceStatus,
+                <<"deviceCountAndProductCount">> => DeviceCountAndProductCount,
+                <<"productDevice">> => ProductAndDeviceCount,
+                <<"deviceStatusRecords">> => DeviceStatusList,
+                <<"errorList">> => ErrorList,
+                <<"deviceLocationRecords">> => DeviceLocationList
+            },
+            dgiot_data:insert(SessionToken, Result)
+    end.
 
 get_product_and_device_count(SessionToken) ->
     case dgiot_parse:query_object(<<"Product">>, #{<<"keys">> => [<<"count(*)">>]}, [{"X-Parse-Session-Token", SessionToken}], [{from, rest}]) of

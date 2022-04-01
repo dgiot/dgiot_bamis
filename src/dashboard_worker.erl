@@ -71,7 +71,6 @@ init([#{<<"data">> := Que, <<"dashboardId">> := DashboardId, <<"sessionToken">> 
     {ok, #task{oldque = Que, newque = Que, freq = 1, dashboardId = DashboardId, sessiontoken = SessionToken}};
 
 init([#{<<"data">> := Que, <<"sessionToken">> := SessionToken}]) ->
-    io:format("dashboard_worker_init ~p ~n",[Que]),
     dgiot_data:insert({dashboard, SessionToken}, self()),
     case length(Que) of
         0 ->
@@ -80,6 +79,11 @@ init([#{<<"data">> := Que, <<"sessionToken">> := SessionToken}]) ->
             erlang:send_after(1000, self(), retry)
     end,
     {ok, #task{oldque = Que, newque = Que, freq = 1, sessiontoken = SessionToken}};
+
+init([#{<<"sessionToken">> := SessionToken}]) ->
+    dgiot_data:insert({dashboard, SessionToken}, self()),
+    erlang:send_after(1000, self(), retry),
+    {ok, #task{sessiontoken = SessionToken}};
 
 init(A) ->
     ?LOG(info, "A ~p ", [A]).
@@ -104,7 +108,7 @@ handle_info(retry, #task{newque = Que} = State) when length(Que) == 0 ->
     {stop, normal, State};
 
 handle_info(retry, State) ->
-    {reply, send_msg(State)};
+    {noreply, send_msg(State)};
 
 handle_info(heart, #task{heart = Heart} = State) when Heart < 4 ->
     erlang:send_after(30 * 1000, self(), heart),
@@ -126,7 +130,7 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-send_msg(#task{newque = Que} =State ) ->
+send_msg(#task{newque = Que} = State) ->
     Task = lists:nth(1, Que),
     dgiot_dashboard:do_task(Task, State),
     NewQue = lists:nthtail(1, Que),
